@@ -25,7 +25,7 @@ The result disparity maps are saved as PNG images.
 
 This command evaluates the different metrics needed for the KITTI benchmark
 
-The results are stored in txt files
+### Examples
 
 #### Pose Evaluation
 ./stereo_reconstruction_eval POSE
