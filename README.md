@@ -20,7 +20,7 @@ This command calculates and saves the disparity map using Block Matching algorit
 
 The result disparity maps are saved as PNG images.
 
-## Eval
+## Evaluation Instructions
 ./stereo_reconstruction_eval \[evaluation type\]
 
 This command evaluates the different metrics needed for the KITTI benchmark
