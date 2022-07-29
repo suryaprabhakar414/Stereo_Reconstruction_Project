@@ -1,10 +1,14 @@
-//
-// Created by Zhijie Yang on 16/12/2021.
-//
+/**
+ * Pairwise distance between two sets of observations. Implementation of MATLAB pdist2 function.
+ *Input: First and Second matrices
+ *Output: Pairwise distance (L2 norm) matrix
+ *Distance = pdist2(X,Y) returns a matrix D containing the Euclidean distances between each pair of observations in the mx-by-n data matrix X and my-by-n data matrix Y.
+ *Rows of X and Y correspond to observations, columns correspond to variables. D is an mx-by-my matrix, with the (i,j) entry equal to distance between observation i in X and observation j in Y. The (i,j) entry will be NaN if observation i in X or observation j in Y contain NaNs.
+ *Ref: https://www.mathworks.com/help/stats/pdist2.html
+ */
 
-#ifndef STEREO_RECONSTRUCTION_PDIST2_H
+ifndef STEREO_RECONSTRUCTION_PDIST2_H
 #define STEREO_RECONSTRUCTION_PDIST2_H
-
 #include <Eigen/Dense>
 #include <numeric>
 #include "types.h"
@@ -18,16 +22,7 @@ bool comparePairs(const std::pair<float, int>&i, const std::pair<float,int>&j) {
     return i.first < j.first;
 }
 
-/**
- * Pairwise distance between two sets of observations. Implementation of MATLAB pdist2 function.
- *@tparam Derived A matrix type
- *@param X first matrix
- *@param Y second matrix
- *@return the pairwise distance (L2 norm) matrix
- *@details D = pdist2(X,Y) returns a matrix D containing the Euclidean distances between each pair of observations in the mx-by-n data matrix X and my-by-n data matrix Y.
- * Rows of X and Y correspond to observations, columns correspond to variables. D is an mx-by-my matrix, with the (i,j) entry equal to distance between observation i in X and observation j in Y. The (i,j) entry will be NaN if observation i in X or observation j in Y contain NaNs.
- *@note see https://www.mathworks.com/help/stats/pdist2.html
- */
+
 template<typename Derived>
 typename Derived::PlainObject pdist2(const Eigen::MatrixBase<Derived>& X, const Eigen::MatrixBase<Derived>& Y)
 {
@@ -72,7 +67,6 @@ std::vector<std::pair<float,int>> pdist2SmallestK(const Eigen::MatrixBase<Derive
 
 /**
 * Squared pairwise distance between two sets of observations.
-*@see pdist2
 */
 template<typename Derived>
 typename Derived::PlainObject pdist2Squared(const Eigen::MatrixBase<Derived>& X, const Eigen::MatrixBase<Derived>& Y)
@@ -86,4 +80,4 @@ typename Derived::PlainObject pdist2Squared(const Eigen::MatrixBase<Derived>& X,
 }
 
 
-#endif //STEREO_RECONSTRUCTION_PDIST2_H
+#endif

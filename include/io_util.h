@@ -1,6 +1,3 @@
-//
-// Created by Ryou on 2022/2/2.
-//
 #include <sys/stat.h>
 #include "defs.h"
 #include <iostream>

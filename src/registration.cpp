@@ -18,8 +18,6 @@ void icp_registration(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_in,
     icp.setMaxCorrespondenceDistance(max_correspondence);
     icp.setMaximumIterations(max_iterations);
     icp.setTransformationEpsilon(transformation_epsilon);
-    // icp.setEuclideanFitnessEpsilon(euclidean_fitness_epsilon);
-    // icp.setRANSACOutlierRejectionThreshold(outlier_threshold);
     icp.setRANSACIterations(50);
 
     // perform the alignment

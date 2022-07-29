@@ -1,7 +1,3 @@
-//
-// Created by Zhijie Yang on 16.12.21.
-//
-
 #ifndef STEREO_RECONSTRUCTION_TYPES_H
 #define STEREO_RECONSTRUCTION_TYPES_H
 

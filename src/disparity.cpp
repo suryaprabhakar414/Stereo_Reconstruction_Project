@@ -1,7 +1,3 @@
-//
-// Created by Zhijie Yang on 14.12.21.
-//
-
 #include "disparity.h"
 #include "pdist2.h"
 #include "triangulation_indirect.h"
@@ -18,10 +14,7 @@ void apply_stereo_SGBM(const cv::Mat &left_img, const cv::Mat &right_img, cv::Ma
                        int speckleWindowSize, int speckleRange, int mode);
 void apply_naive_block_matching(const cv::Mat &left_img, const cv::Mat &right_img, cv::Mat &disp_img, int block_size, int min_disparity, int max_disparity,
                              float d);
-/*
- * Returns the disparity map of two input stereo images
- *
- */
+
 cv::Mat calcDisparity(const cv::Mat& left_img, const cv::Mat& right_img, Algorithm matching_algorithm) {
     cv::Mat disp_img = cv::Mat::zeros(left_img.size(), left_img.type());
 
@@ -30,12 +23,10 @@ cv::Mat calcDisparity(const cv::Mat& left_img, const cv::Mat& right_img, Algorit
     int max_disparity = 80;
     int BM_block_size = 15;
     int SGBM_block_size = 13;
-    // is used in naive BM algorithm to check if the founded correspondence is valid
     float validDisparityThreshold = 1.5;
     std::vector<cv::KeyPoint> keypoints_1, keypoints_2;
     std::vector<cv::DMatch> matches;
     cv::Mat img_matches;
-//    std::string matcher_name = "BruteForce-Hamming";
 
     switch(matching_algorithm) {
         case SURF:
@@ -74,13 +65,7 @@ cv::Mat calcDisparity(const cv::Mat& left_img, const cv::Mat& right_img, Algorit
     return disp_img;
 }
 
-/*
- * TODO: determine 3D point cloud for disparity image in camera frame
- * conventions:
- * - points: pcl point cloud
- * - intensities: grey values of the corresponding pixels
- * - only pixels with valid disparity should be included into the point cloud
- */
+
 pcl::PointCloud<pcl::PointXYZRGB> disparity2PointCloudRGB(const cv::Mat& disp_img, cv::Mat K, float baseline, const cv::Mat& left_img) {
     unsigned int n_valid;
     auto width = left_img.size().width;
@@ -96,7 +81,6 @@ pcl::PointCloud<pcl::PointXYZRGB> disparity2PointCloudRGB(const cv::Mat& disp_im
 
     cv::Mat disp_img_32f;
     disp_img.convertTo(disp_img_32f, CV_32F, 1.0);
-    // disp_img.convertTo(disp_img_32f, CV_32F, 1.0 / 16.0);
 
     for (int v = 0; v < left_img.rows; v++) {
         uchar* rgb_ptr = const_cast<uchar *>(left_img.ptr<uchar>(v));
@@ -167,9 +151,6 @@ pcl::PointCloud<pcl::PointXYZI> disparity2PointCloud(const cv::Mat& disp_img, cv
 }
 
 
-/*
- * Matching algorithms implementation
- */
 void apply_stereo_BM(const cv::Mat &left_img, const cv::Mat &right_img, cv::Mat &disp_img, int max_disparity, int block_size) {
     auto stereoBM = cv::StereoBM::create(max_disparity, block_size);
     stereoBM->compute(left_img, right_img, disp_img);
@@ -233,9 +214,7 @@ void apply_naive_block_matching(const cv::Mat& left_img, const cv::Mat& right_im
     }
 }
 
-/*
- * help functions implementation
- */
+//Utility to check threshold
 bool checkThreshold(std::vector<std::pair<float, int>> distPairs, float threshold) {
     float smallest = distPairs[0].first;
     bool isInvalid = true;

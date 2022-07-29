@@ -11,7 +11,6 @@
 using namespace std;
 
 // static parameter
-// float lengths[] = {5,10,50,100,150,200,250,300,350,400};
 float lengths[] = {100,200,300,400,500,600,700,800};
 int32_t num_lengths = 8;
 
@@ -215,7 +214,6 @@ void pose_eval (string algorithm) {
 
 
     // create output directories
-    //system(("mkdir"+ result_dir).c_str());
     system(("mkdir -p " + error_dir).c_str());
 
 
@@ -236,11 +234,7 @@ void pose_eval (string algorithm) {
 
 
     // compute sequence errors
-//    vector<errors> seq_err = calcSequenceErrors(poses_gt, poses_result);
     vector<simple_error> seq_err = calcSimpleError(poses_gt, poses_result);
-//    saveSequenceErrors(seq_err,error_dir + "/" + file_name);
     saveSimpleErrors(seq_err, error_dir + "/" + file_name);
-    //saveStats(seq_err,result_dir);
-
 
 }

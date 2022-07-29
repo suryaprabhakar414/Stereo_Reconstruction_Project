@@ -33,12 +33,6 @@ namespace indirect {
                 detector = cv::SIFT::create();
                 matcher_name = "BruteForce";
                 break;
-            // case SURF:
-            //     /// Not suitable for Hamming based matching!!
-            //     std::cout << "Running with SURF" << std::endl;
-            //     detector = cv::xfeatures2d::SURF::create();
-            //     matcher_name = "FlannBased";
-            //     break;
         }
         cv::Ptr<cv::DescriptorMatcher> matcher = cv::DescriptorMatcher::create(matcher_name);
         // 1. Detect corners
@@ -70,7 +64,6 @@ namespace indirect {
                     matches.push_back(match[i]);
                 }
             }
-//        } else if (matcher_name == "BruteForce" || matcher_name == "BruteForce-L2") {
         } else {
             std::cout << "KNN matches on Flann" << std::endl;
             std::vector< std::vector<cv::DMatch> > knn_matches;
@@ -220,19 +213,11 @@ namespace indirect {
         cv::Mat img2_plot = img_2.clone();
         for (int i = 0; i < orb_matches.size(); i++) {
             float depth1 = points[i].z;
-//        std::cout << "depth: " << depth1 << std::endl;
-//        Point2d pt1_cam = pixel2cam(keypoints_1[matches[i].queryIdx].pt, K);
-//        cv::circle(img1_plot, keypoints_1[matches[i].queryIdx].pt, 2, get_color(depth1), 2);
             cv::circle(img1_plot, orb_keypoints_1[orb_matches[i].queryIdx].pt, 2, cv::Scalar(255, 0, 255), 2);
-
             cv::Mat pt2_trans = R_orb * (cv::Mat_<double>(3, 1) << points[i].x, points[i].y, points[i].z) + t_orb;
             float depth2 = pt2_trans.at<double>(2, 0);
-//        cv::circle(img2_plot, keypoints_2[matches[i].trainIdx].pt, 2, get_color(depth2), 2);
             cv::circle(img2_plot, orb_keypoints_2[orb_matches[i].trainIdx].pt, 2, cv::Scalar(255, 0, 255), 2);
         }
-//    cv::imshow("img 1", img1_plot);
-//    cv::imshow("img 2", img2_plot);
-//    cv::waitKey();
         pcl::PointCloud<pcl::PointXYZI> cloud;
         for (auto &p: points) {
             pcl::PointXYZI cloud_p;

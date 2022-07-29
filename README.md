@@ -1,39 +1,42 @@
-# stereo-reconstruction
+# Stereo Reconstruction
+## Surya Prabhakaran, Soumya Mondal
 
-## Main
+## Running Instructions
 Command: ./stereo_reconstruction \[algorithm\] \[dataset\] \[number of test images\]
 
-### Example
+### Examples
 
 #### odometry
 ./stereo_reconstruction BM ODOMETRY 10
 
-This command will run the stereo reconstruction full pipeline using Block Matching algorithms based on the 10 images in Kitti odemetry dataset sequences.
+This command runs the stereo reconstruction pipeline using Block Matching algorithm based on the first 10 images in the KITTI odemetry dataset sequences.
 
-The result pose will be saved in txt.
+The result pose is saved in a txt file.
 
 #### stereo
 ./stereo_reconstruction BM STEREO 10
 
-This command will calculate and save the disparity map using Block Matching algorithms based on the 10 images in Kitti stereo dataset.
+This command calculates and saves the disparity map using Block Matching algorithm based on the first 10 images in KITTI stereo dataset.
 
-The result disparity maps will be saved in png.
+The result disparity maps are saved as PNG images.
 
 ## Eval
-Command: ./stereo_reconstruction_eval \[evaluation type\]
+./stereo_reconstruction_eval \[evaluation type\]
 
-### Example
+This command evaluates the different metrics needed for the KITTI benchmark
+
+The results are stored in txt files
 
 #### Pose Evaluation
 ./stereo_reconstruction_eval POSE
 
-This command will go through all the supported algorithm to find their latest result pose and compare with the Kitti ground truth pose of odometry dataset.
+This command goes through all the supported algorithms to find their last resulting pose and compares it with the KITTI ground truth pose of the odometry dataset.
 
-The result of the evaluation could be found in the result folder.
+The result of the evaluation is located in the result folder.
 
 #### Disparity Map Evaluation
 ./stereo_reconstruction_eval DISPARITY
 
-This command will go through all the supported algorithm to find their latest result disparity map and compare with the Kitti ground truth disparity map of stereo dataset.
+This command goes through all the supported algorithms to find their last result disparity map and compares it with the KITTI ground truth disparity map of the stereo dataset.
 
-The result of the evaluation could be found in the result folder.
+The result of the evaluation is located in the result folder.

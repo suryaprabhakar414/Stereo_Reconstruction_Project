@@ -1,7 +1,3 @@
-#
-# Created by Zhijie Yang on 14.12.21.
-#
-
 cmake_minimum_required(VERSION 3.10)
 
 project(stereo_reconstruction)

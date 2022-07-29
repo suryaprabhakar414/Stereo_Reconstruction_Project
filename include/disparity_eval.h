@@ -8,11 +8,8 @@
 #include "io_disp.h"
 #include "io_integer.h"
 
-// Number of result images for evaluation
-//#define NUM_TEST_IMAGES 200
 #define NUM_TEST_IMAGES 100
 
-//#define NUM_ERROR_IMAGES 20
 #define NUM_ERROR_IMAGES 100
 
 #define ABS_THRESH 3.0

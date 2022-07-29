@@ -1,5 +1,9 @@
 #include "disparity.h"
 #include "registration.h"
+#include "disparity_eval.h"
+#include "defs.h"
+#include "triangulation_indirect.h"
+#include "io_util.h"
 #include <string>
 #include <chrono>
 #include <thread>
@@ -13,25 +17,10 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl/filters/voxel_grid.h>
-#include "disparity_eval.h"
-#include "defs.h"
-#include "triangulation_indirect.h"
-#include "io_util.h"
+
 
 template<typename T>
-void visualize_pointcloud(typename pcl::PointCloud<T>::ConstPtr cloud) {
-    pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("3D Viewer"));
-    viewer->setBackgroundColor(0, 0, 0);
-    viewer->addPointCloud<T>(cloud, "cloud");
-    viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "cloud");
-    viewer->addCoordinateSystem(1.0);
-    // event loop
-    // Each call to spinOnce gives the viewer time to process events, allowing it to be interactive.
-    while (!viewer->wasStopped()) {
-        viewer->spinOnce(100);
-        std::this_thread::sleep_for(std::chrono::microseconds(100000));
-    }
-}
+
 
 // Down sample cloud to down_sampled
 void downsample(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr down_sampled, double voxel_size) {
@@ -53,28 +42,28 @@ int main(int argc, char** argv) {
     bool usingGroundTruth;
 
     if (argc == 5) {
-        // Define which matching algorithm will be used: 0-SURF, 1-SIFT, 2-ORB, 3-BM, 4-SGBM, default is BM
+        // Define which matching algorithm to use
         algorithm = std::string(argv[1]);
 
-        // Define which subdataset will be used: 0-Kitti stereo 2015, 1-Kitti odometry, default is odometry
-        // This is because when running evaluation, stereo 2015 has disparity map ground truth, and odometry has pose ground truth
+        // Define which subdataset to use
         dataset = std::string(argv[2]);
 
-        // Define how many pairs of image will be used in stereo 2015 or how many frames in sequences will be used in odometry, default is 10
+        // Define how many pairs of image to use
         num_test_images = atoi(argv[3]);
 
-        // Define if use the ground truth pose for reconstruction or not
+        // To use ground truth pose for reconstruction or not
         usingGroundTruth = atoi(argv[4]) > 0? true: false;
     } else if (argc == 4 && std::string(argv[2]) == "STEREO") {
         algorithm = std::string(argv[1]);
         dataset = std::string(argv[2]);
         num_test_images = atoi(argv[3]);
     }
+    //Default
     else {
        algorithm =  "BM";
        dataset = "ODOMETRY";
        num_test_images = atoi(argv[3]);
-       usingGroundTruth = true;
+       usingGroundTruth = false;
     }
 
     // Check if input is valid
@@ -107,9 +96,9 @@ int main(int argc, char** argv) {
      * Pipeline start
      * Stage 0: Dataset preprocessing
      */
+
     // read intrinsic for stereo camera
     K << K_arr[0], K_arr[1], K_arr[2], K_arr[3], K_arr[4], K_arr[5], K_arr[6], K_arr[7], K_arr[8];
-    // TODO: delete the debugging code
     std::cout << K <<std::endl;
 
     // read input stereo images from dataset
@@ -127,7 +116,7 @@ int main(int argc, char** argv) {
         for (int i = 0; i < num_test_images; i++) {
             // read input stereo images
             char prefix[256];
-            sprintf(prefix, "%06d", i);//sprintf(prefix, "%06d_10", i);
+            sprintf(prefix, "%06d", i);
 
             std::string image_path = std::string(prefix) + ".png";
             std::string image_path_left = left + image_path;
@@ -172,18 +161,15 @@ int main(int argc, char** argv) {
         /*
          * Stage 1: Disparity Map computation (use and compare different matching algorithms)
          */
+
         cv::Mat init_disparity_norm;
         cv::Mat init_disparity = calcDisparity(init_img_left, init_img_right, (Algorithm) matching_algorithm);
         normalize(init_disparity, init_disparity_norm, 0, 80, CV_MINMAX, CV_16UC1);
-        
-        // normalize(init_disparity, init_disparity_norm, 0, 80 * 256, CV_MINMAX, CV_16S);
-
-        //cv::imshow("disparity", init_disparity_norm);
-        //cv::waitKey();
 
         /*
          * Stage 2 & 3: Triangulation and projection
         */
+        
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr init_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
         init_cloud = disparity2PointCloudRGB(init_disparity_norm, K, baseline, init_img_left_color).makeShared();
 
@@ -193,7 +179,8 @@ int main(int argc, char** argv) {
         pose.setIdentity();
         poses.push_back(pose);
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr last_cloud(init_cloud);
-        // create a point cloud to be merged
+        
+        // create point cloud to be merged
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr merged_cloud(init_cloud);
 
         Eigen::Matrix4f tf_orb;
@@ -232,7 +219,9 @@ int main(int argc, char** argv) {
         /*
          * Stage 4: Motion Estimation & Point cloud registration
         */
+
         for (int i = 1; i < num_test_images; i++) {
+            
             // read input stereo images
             char prefix[256];
             sprintf(prefix, "%06d", i);
@@ -253,8 +242,6 @@ int main(int argc, char** argv) {
             std::string dir = std::string("../result/odometry/").append(algorithm) + "/";
             saveDisparityMap(dir, image_path, disparity_norm);
             
-            // normalize(disparity, disparity_norm, 0, 80 * 256, CV_MINMAX, CV_16S);
-
             pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
             cloud = disparity2PointCloudRGB(disparity_norm, K, baseline, img_left_color).makeShared();
 
@@ -265,7 +252,6 @@ int main(int argc, char** argv) {
             if (usingGroundTruth) {
                 pose = gt_poses[i - 1];
             } else {
-                //icp_registration(last_cloud, cloud, transform);
                 transform.setIdentity();
                 transforms.push_back(transform);
                 pose = transform * pose;
@@ -275,12 +261,7 @@ int main(int argc, char** argv) {
 
             // transform point cloud
             pcl::PointCloud<pcl::PointXYZRGB>::Ptr temp(new pcl::PointCloud<pcl::PointXYZRGB>);
-            // pcl::transformPointCloud(*cloud, *temp, pose.inverse());
             pcl::transformPointCloud(*cloud, *temp, pose);
-
-            // down sample current point cloud
-            // pcl::PointCloud<pcl::PointXYZRGB>::Ptr down_sampled(new pcl::PointCloud<pcl::PointXYZRGB>);
-            // downsample(temp, down_sampled, 0.1f);
 
             Eigen::Matrix4f tf_orb;
             Eigen::Matrix4f tf_sift;
@@ -300,14 +281,9 @@ int main(int argc, char** argv) {
         savePoses(outputDir, "sift", left_right_sift);
         savePoses(outputDir, "surf", left_right_surf);
         std::string pcd_file_name = std::to_string(num_test_images);
-        // if (usingGroundTruth) {
-        //     pcd_file_name.append("_gt");
-        // }
         pcd_file_name.append(".pcd");
         std::cout<<pcd_file_name;
         pcl::io::savePCDFileASCII(pcd_file_name, *merged_cloud);
-        // visualize merged point cloud
-        // visualize_pointcloud<pcl::PointXYZRGB>(merged_cloud->makeShared());
     }
 
     return 0;
